@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# A script to filter a set of files from a git commit. The filter is applied
+# only to new files (although this can be exetended to others states).
+# 
+# If files that match the filter are added to the git index, the user is
+# prompted whether these files should really be added to the git repository.
+# If this is not required, then these files are unstaged.
+
+# The following REGEXP is used to filter the file names.
+filter_regexp="\S+\.(caffemodel|solverstate|npy|caffetrace\S*)\b"
+
 # Determing whether the HEAD is a valid reference.
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
@@ -41,22 +51,19 @@ function get_file_list {
 	local file_list=`git diff-index --cached --name-only $filter $REF`
 	if [ $# -gt 0 ]
 	then
-		echo $file_list | grep $*
+		echo $file_list | grep -oE $*
 	else
 		echo $file_list
 	fi
 }
 
 
-
-# The following file extensions are blacklisted
-blacklist="\S+\.(caffemodel|solverstate|npy)\b"
-
+# Get the list of files.
 added_files=`get_file_list A`
-added_blacklist_files=`get_file_list A -oE $blacklist`
+added_blacklist_files=`get_file_list A $filter_regexp`
 
 modified_files=`get_file_list M`
-modified_blacklist_files=`get_file_list M -oE "$blacklist"`
+modified_blacklist_files=`get_file_list M $filter_regexp`
 
 deleted_files=`get_file_list D`
 
@@ -68,28 +75,32 @@ deleted_files=`get_file_list D`
 
 if [ x"$added_blacklist_files" != x"" ]
 then
-	exec < /dev/tty
-	echo "The following files were added, but are blacklisted:"
-	echo $added_blacklist_files
+	old_stdin=$stdin
 	echo ""
-	read -p "Should these be checked in in any case? y/[N]: " response
+	echo "The following files were added, but are marked to be filtered out:"
+	echo "	"$added_blacklist_files
+	echo ""
+	{ 
+		read -p "Should these be checked in in any case? y/[N]: " response 
+	} < /dev/tty
 	response=${response:-N}
 
 	if [ "${response}" != "y" ]
 	then
 		for f in $added_blacklist_files
 		do
-			echo "Removing $f from the list of file added (git reset $REF)"
-			echo "$PWD"
-			echo "git reset HEAD $f"
-			git reset HEAD $f
-			git status
+			echo ""
+			echo "Unstaging $f (git reset $REF)"
+			git reset $REF $f
 		done
+		echo ""
 
 		remaining_files=`get_file_list ALL`
 		if [ x"$remaining_files" == x"" ]
 		then
 			echo "Nothing to commit."
+			# Exit with a non-zero exit code to ensure that the commit is
+			# aborted.
 			exit 1
 		fi
 	fi
