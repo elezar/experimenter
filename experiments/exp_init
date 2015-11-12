@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# A simple script to perform the intialisation of an experiment.
+
+if [ $# -lt 1 ]
+then
+	path_arg="."
+else
+	path_arg=$1
+	shift
+fi
+
+
+# Initialise a git repository at the specified path.
+# git init $path_arg
+
+if [ "$path_arg" == "." ]
+then
+	
+fi
+
