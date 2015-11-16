@@ -1,21 +1,89 @@
 #!/bin/bash
 
 # A simple script to perform the intialisation of an experiment.
+README_FILE=README.md
 
+function out_line {
+	echo $* >> $README_FILE
+}
+
+function create_readme {
+
+	local repo=$1
+	local data=$2
+
+	if [ ! -f $README_FILE ]
+	then
+		out_line "---"
+		out_line "AUTHOR=$(whoami)"
+		out_line "DATE=$(date '+%Y-%m-%d %H:%M:%S')"
+		out_line "REPO_NAME=$(basename $repo)"
+		out_line "REPO_PATH=$repo"
+		out_line "DATA_PATH=$data"
+		out_line "---"
+	fi
+
+	# Add the README file to the git repo.
+	git add $README_FILE
+}
+
+
+function init_hooks {
+
+	local repo=$1/.git/hooks
+	local script=$2
+
+	if [ ! -f $repo/pre-commit ]
+	then
+		ln -s $script/pre-commit-filter $repo/pre-commit
+	fi
+}
+
+# Determine the path where the repo should be created.
 if [ $# -lt 1 ]
 then
-	path_arg="."
+	username=$(whoami)
+	username=${username//_/}
+	path_arg=$(whoami)_$(date '+%Y_%m_%d')
 else
 	path_arg=$1
 	shift
 fi
 
+current_dir=$PWD
 
 # Initialise a git repository at the specified path.
-# git init $path_arg
 
 if [ "$path_arg" == "." ]
 then
-	
+	REPO_PATH=$current_dir
+else
+	REPO_PATH=$current_dir/$path_arg
 fi
 
+# Initialise a GIT repo in the specified path.
+git init $REPO_PATH
+
+
+cd $REPO_PATH
+repo_name=$(basename $REPO_PATH)
+# Determine the DATA_ROOT
+DATA_PATH=${DATA_ROOT:-}
+
+# Setup the readme.
+create_readme $REPO_PATH $DATA_PATH
+
+# Create the git hooks
+SCRIPT_PATH=$(dirname $(which exp_init))/../git_hooks
+init_hooks $REPO_PATH $SCRIPT_PATH
+
+
+
+# DEBUG:
+git status
+# DEBUG: Print the added readme
+cat $REPO_PATH/$README_FILE
+
+
+# Return to the previous directory.
+cd $current_dir

@@ -2,7 +2,7 @@
 
 # A script to filter a set of files from a git commit. The filter is applied
 # only to new files (although this can be exetended to others states).
-# 
+#
 # If files that match the filter are added to the git index, the user is
 # prompted whether these files should really be added to the git repository.
 # If this is not required, then these files are unstaged.
@@ -67,9 +67,9 @@ modified_blacklist_files=`get_file_list M $filter_regexp`
 
 deleted_files=`get_file_list D`
 
-# print_files "added" $added_files 
+# print_files "added" $added_files
 # print_files "added(blacklist)" $added_blacklist_files
-# print_files "modified" $modified_files 
+# print_files "modified" $modified_files
 # print_files "modified(blacklist)" $modified_blacklist_files
 # print_files "deleted" $deleted_files
 
@@ -80,8 +80,8 @@ then
 	echo "The following files were added, but are marked to be filtered out:"
 	echo "	"$added_blacklist_files
 	echo ""
-	{ 
-		read -p "Should these be checked in in any case? y/[N]: " response 
+	{
+		read -p "Should these be checked in in any case? y/[N]: " response
 	} < /dev/tty
 	response=${response:-N}
 
