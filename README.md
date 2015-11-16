@@ -14,8 +14,8 @@ synced to a data folder for archival.
 
 # Installation
 
-1) Clone the repository: ```git clone https://github.com/elezar/experimenter.git```
-2) Add the cloned folder to the $PATH (or use ```exp_init```
+1. Clone the repository: ```git clone https://github.com/elezar/experimenter.git```
+2. Add the cloned folder to the $PATH (or use ```exp_init```
    with its location specified explicitly)
 
 # Usage
@@ -29,12 +29,12 @@ where ```folder``` is an optional path specification.
 
 The utility will perform the following steps:
 
-1) Initialise a Git repository at ```folder```
-2) Add a ```README.md``` file to the repository with a metadata header
-3) Add a ```.gitignore``` file to the repository
-4) Add a ```src``` folder to the repository
-5) Install a pre-commit and post-commit by linking to the shell scripts in the ```git_hooks``` folder
-6) Perform an initial commits
+1. Initialise a Git repository at ```folder```
+2. Add a ```README.md``` file to the repository with a metadata header
+3. Add a ```.gitignore``` file to the repository
+4. Add a ```src``` folder to the repository
+5. Install a pre-commit and post-commit by linking to the shell scripts in the ```git_hooks``` folder
+6. Perform an initial commits
 
 If ```folder``` is not specified, a folder name is automatically generated. The
 folder name also serves as the experiment tag.
