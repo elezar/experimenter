@@ -68,12 +68,16 @@ function init_hooks {
 
 }
 
+function default_folder_name {
+	echo $(whoami)_$(date '+%Y_%m_%d')
+}
+
 # Determine the path where the repo should be created.
 if [ $# -lt 1 ]
 then
 	username=$(whoami)
 	username=${username//_/}
-	path_arg=$(whoami)_$(date '+%Y_%m_%d')
+	path_arg=`default_folder_name`
 else
 	path_arg=$1
 	shift
