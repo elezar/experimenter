@@ -33,7 +33,7 @@ function create_gitignore {
 	local gitignore_file=".gitignore"
 	if [ ! -f $gitignore_file ]
 	then
-		echo "# Ignore the following files by default"
+		echo "# Ignore the following files by default" >> $gitignore_file
 		echo "*.caffemodel" >> $gitignore_file
 		echo "*.npy" >> $gitignore_file
 		echo "*.solverstate" >> $gitignore_file
@@ -44,6 +44,12 @@ function create_gitignore {
 	git add $gitignore_file
 }
 
+
+function create_subfolders {
+	local repo=$1
+
+	mkdir -p $repo/src
+}
 
 function init_hooks {
 
@@ -82,12 +88,28 @@ then
 	REPO_PATH=$current_dir
 else
 	REPO_PATH=$current_dir/$path_arg
+
+	if [ -d $REPO_PATH ]
+	then
+		echo ""
+		echo "The folder for the specified experiment already exists"
+		echo "    $REPO_PATH"
+		echo ""
+		read -p "Continue? y/[N]: " response
+		if [ "${response:-N}" != "y" ]
+		then
+			exit 0
+		fi
+	fi
+
 fi
 
 # Initialise a GIT repo in the specified path.
+echo ""
 git init $REPO_PATH
+echo ""
 
-
+# Setup some Repo contents.
 cd $REPO_PATH
 repo_name=$(basename $REPO_PATH)
 # Determine the DATA_ROOT
@@ -97,24 +119,29 @@ DATA_PATH=${DATA_ROOT:-${DEFAULT_DATA_ROOT}}
 create_readme $REPO_PATH $DATA_PATH
 # Setup the gitignore
 create_gitignore $REPO_PATH
-
+# Create the default folders.
+create_subfolders $REPO_PATH
 
 # Create the git hooks
 SCRIPT_PATH="/home/elezar/src/scripts/git_hooks" # $(dirname $(which exp_init))/../git_hooks
 init_hooks $REPO_PATH $SCRIPT_PATH
 
-# DEBUG:
-git status
+if [ $DEBUG ]
+then
+	git status
+fi
 
 # As a final step perform an initial commit.
 # TODO: This should not be done if there are already files in the folder.
 git commit -m "Initial commit (Automatic)."
 
-# DEBUG:
-git status
-# DEBUG: Print the added readme
-cat $REPO_PATH/$README_FILE
 
+if [ $DEBUG ]
+then
+	git status
+	# DEBUG: Print the added readme
+	cat $REPO_PATH/$README_FILE
+fi
 
 # Return to the previous directory.
 cd $current_dir
