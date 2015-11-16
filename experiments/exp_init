@@ -2,6 +2,7 @@
 
 # A simple script to perform the intialisation of an experiment.
 README_FILE=README.md
+DEFAULT_DATA_ROOT=
 
 function out_line {
 	echo $* >> $README_FILE
@@ -17,14 +18,30 @@ function create_readme {
 		out_line "---"
 		out_line "AUTHOR=$(whoami)"
 		out_line "DATE=$(date '+%Y-%m-%d %H:%M:%S')"
-		out_line "REPO_NAME=$(basename $repo)"
+		out_line "EXPERIMENT_TAG=$(basename $repo)"
 		out_line "REPO_PATH=$repo"
-		out_line "DATA_PATH=$data"
+		out_line "DATA_ROOT=$data"
 		out_line "---"
 	fi
 
 	# Add the README file to the git repo.
 	git add $README_FILE
+}
+
+function create_gitignore {
+	local repo=$1
+	local gitignore_file=".gitignore"
+	if [ ! -f $gitignore_file ]
+	then
+		echo "# Ignore the following files by default"
+		echo "*.caffemodel" >> $gitignore_file
+		echo "*.npy" >> $gitignore_file
+		echo "*.solverstate" >> $gitignore_file
+		echo "*.caffetrace*" >> $gitignore_file
+	fi
+
+	# Add the .gitignore file to the git repo.
+	git add $gitignore_file
 }
 
 
@@ -35,8 +52,14 @@ function init_hooks {
 
 	if [ ! -f $repo/pre-commit ]
 	then
-		ln -s $script/pre-commit-filter $repo/pre-commit
+		ln -s $script/pre-commit-filter.sh $repo/pre-commit
+
 	fi
+	if [ ! -f $repo/post-commit ]
+	then
+		ln -s $script/post-commit-copy.sh $repo/post-commit
+	fi
+
 }
 
 # Determine the path where the repo should be created.
@@ -68,16 +91,24 @@ git init $REPO_PATH
 cd $REPO_PATH
 repo_name=$(basename $REPO_PATH)
 # Determine the DATA_ROOT
-DATA_PATH=${DATA_ROOT:-}
+DATA_PATH=${DATA_ROOT:-${DEFAULT_DATA_ROOT}}
 
 # Setup the readme.
 create_readme $REPO_PATH $DATA_PATH
+# Setup the gitignore
+create_gitignore $REPO_PATH
+
 
 # Create the git hooks
-SCRIPT_PATH=$(dirname $(which exp_init))/../git_hooks
+SCRIPT_PATH="/home/elezar/src/scripts/git_hooks" # $(dirname $(which exp_init))/../git_hooks
 init_hooks $REPO_PATH $SCRIPT_PATH
 
+# DEBUG:
+git status
 
+# As a final step perform an initial commit.
+# TODO: This should not be done if there are already files in the folder.
+git commit -m "Initial commit (Automatic)."
 
 # DEBUG:
 git status
