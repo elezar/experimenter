@@ -23,7 +23,7 @@ synced to a data folder for archival.
 Assuming that the project folder has been added to the path, the basic usage of
 the utility is as follows:
 
-	```exp_init [folder]```
+	exp_init [folder]
 
 where ```folder``` is an optional path specification.
 
