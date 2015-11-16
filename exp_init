@@ -123,10 +123,10 @@ create_gitignore $REPO_PATH
 create_subfolders $REPO_PATH
 
 # Create the git hooks
-SCRIPT_PATH="/home/elezar/src/scripts/git_hooks" # $(dirname $(which exp_init))/../git_hooks
+SCRIPT_PATH="$(dirname $(which exp_init))/git_hooks"
 init_hooks $REPO_PATH $SCRIPT_PATH
 
-if [ $DEBUG ]
+if [ $EXP_INIT_DEBUG ]
 then
 	git status
 fi
@@ -136,7 +136,7 @@ fi
 git commit -m "Initial commit (Automatic)."
 
 
-if [ $DEBUG ]
+if [ $EXP_INIT_DEBUG ]
 then
 	git status
 	# DEBUG: Print the added readme

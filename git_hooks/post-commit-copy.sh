@@ -9,13 +9,29 @@ README_FILENAME='README.md'
 
 function copy_data {
 	local SRC=$1
-	local DEST=$2
+	local DATA_ROOT=$2
+	local TAG=$3
+
+	if [ $EXP_INIT_DEBUG ]
+	then
+		echo "SRC=$SRC"
+		echo "DATA_ROOT=$DATA_ROOT"
+		echo "TAG=$TAG"
+	fi
+	if [ x"$DATA_ROOT" == x"" ]
+	then
+		return 0
+	fi
+
+	# Construct the destination folder from the data root and the tag.
+	DEST=$DATA_ROOT/$TAG
 
 	if [ $SRC == $DEST ]
 	then
 		return 0
 	fi
 
+	# Check if the destination folder exists.
 	if [ ! -d $DEST ]
 	then
 		mkdir -p $DEST
@@ -39,6 +55,7 @@ function copy_data {
 
 	if [ ${perform_copy:-Y} == "Y" ]
 	then
+		echo ""
 		echo "Syncing data from '$SRC' to '$DEST':"
 		rsync -avz --exclude='.git/' $SRC/ $DEST/
 		echo ""
@@ -79,12 +96,18 @@ fi
 # Process the README.md file to determine where the files should be copied.
 experiment_tag_line=`head -7 $README_FILE | grep -oE "EXPERIMENT_TAG=\S+"`
 data_root_line=`head -7 $README_FILE | grep -oE "DATA_ROOT=\S+"`
-
 EXPERIMENT_TAG=${experiment_tag_line/*=/}
 DATA_ROOT=${data_root_line/*=/}
 
-# Append the experiment tag to the data root.
-DEST_DIR=$DATA_ROOT/$EXPERIMENT_TAG
+if [ $EXP_INIT_DEBUG ]
+then
+	echo "experiment_tag_line=$experiment_tag_line"
+	echo "data_root_line=$data_root_line"
+	echo "EXPERIMENT_TAG=$EXPERIMENT_TAG"
+	echo "DATA_ROOT=$DATA_ROOT"
+fi
+
+
 
 # Copy the data.
-copy_data $REPO_ROOT $DEST_DIR
+copy_data "$REPO_ROOT" "$DATA_ROOT" "$EXPERIMENT_TAG"
